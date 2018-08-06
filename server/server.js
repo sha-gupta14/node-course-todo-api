@@ -1,78 +1,68 @@
 const express = require('express');
+const path = require('path');
+const exphbs  = require('express-handlebars');
+const methodOverride = require('method-override')
+const flash = require('connect-flash');
+const session = require('express-session');
 const bodyParser = require('body-parser');
-const {ObjectID} = require('mongodb');
-const {mongoose} = require('./db/mongoos');
-const {Todo} = require('./models/todo');
-const {User} = require('./models/user');
-
+const passport = require('passport');
 const app = express();
 const port = process.env.PORT || 3000;
-
+//Loading routes
+const idea = require('../routes/idea');
+const user = require('../routes/user');
+// Passport Config
+require('../config/passport')(passport);
+//handlebars middleware
+app.engine('handlebars', exphbs({
+  defaultLayout: 'main'
+}));
+app.set('view engine', 'handlebars');
+//Static middleware
+app.use(express.static(path.join(__dirname, '../public')));
+//Body-parser middleware
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-
-app.post('/todos', (req, res) => {
-  const todo = new Todo({
-    text: req.body.text
-  });
-  todo.save().then((doc) => {
-    res.send(doc)
-  }, (e) => {
-    res.status(400).send(e);
+//Method override middleware
+app.use(methodOverride('_method'));
+//Express session midleware
+app.use(session({
+  secret: 'secret',
+  resave: true,
+  saveUninitialized: true
+}));
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(flash());
+//Global variables
+app.use((req, res, next) => {
+  res.locals.success_msg = req.flash('success_msg');
+  res.locals.error_msg = req.flash('error_msg');
+  res.locals.error = req.flash('error');
+  res.locals.user = req.user || null;
+  next();
+});
+//Routes middleware
+app.use('/ideas', idea);
+app.use('/users', user);
+//Home page
+app.get('/', (req, res) => {
+  res.render('index', {
+    title: 'Welcome'
   });
 });
-
-app.get('/todos', (req, res) => {
-  Todo.find().then((todos) => {
-    res.send({todos});
-  }, (e) => {
-    res.status(400).send('e');
-  })
-})
-
-app.get('/todos/:id', (req, res) => {
-  var id = req.params.id;
-  if (!ObjectID.isValid(id)) {
-    return res.status(404).send();
-  }
-  Todo.findById(id).then((todo) => {
-    if (!todo) {
-      return res.status(404).send();
-    }
-    res.send({todo});
-  }).catch((e) => {
-    res.status(400).send();
+//About page
+app.get('/about', (req, res) => {
+  res.render('about');
+});
+//404 page not found
+app.get('*', (req, res) => {
+  res.render('page', {
+    error_code: '404',
   });
 });
-
-app.delete('/todos/:id', (req, res) => {
-  const id = req.params.id;
-  if (!ObjectID.isValid(id)) {
-    return res.status(404).send();
-  }
-  Todo.findByIdAndRemove(id).then((todo) => {
-    if (!todo) {
-      return res.status(404).send();
-    }
-    res.send(todo);
-  }).catch((e) => {
-    res.status(400).send();
-  });
-});
-
+//Server port
 app.listen(port, () => {
-  console.log(`Started on ${port} server`);
+  console.log(`Started on ${port} port`);
 });
-
-module.exports = {app};
-
-// const new_todo = new todo({
-//   text: "Learning Mongoose",
-//   completed: false,
-//   completedAt: 123
-// });
-//
-// new_todo.save().then((result) => {
-//   console.log('Saved data', result);
-// }, (err) => {
-//   console.log('Unable to save data', err);
-// })

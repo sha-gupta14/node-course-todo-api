@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
-
+const db = require('../../config/database');
+//Map global promis - get rid of warnings
 mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost:27017/Todos', { useNewUrlParser: true });
+mongoose.connect(db.mongoURI, { useNewUrlParser: true });
 
 module.export = {mongoose};

@@ -4,9 +4,7 @@
   "description": "Node JS Todo API",
   "main": "index.js",
   "scripts": {
-    "start": "node server/server.js",
-    "test": "mocha server/**/*.test.js",
-    "test-watch": "nodemon --exec npm test"
+    "start": "node server/server.js"
   },
   "engines": {
     "node": "9.8.0"
@@ -14,15 +12,16 @@
   "author": "Shashank Gupta",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.3",
+    "connect-flash": "^0.1.1",
     "express": "^4.16.3",
+    "express-handlebars": "^3.0.0",
+    "express-session": "^1.15.6",
+    "method-override": "^3.0.0",
     "mongodb": "^2.2.33",
-    "mongoose": "^5.2.1"
-  },
-  "devDependencies": {
-    "expect": "^23.3.0",
-    "mocha": "^5.2.0",
-    "nodemon": "^1.17.5",
-    "supertest": "^3.1.0"
+    "mongoose": "^5.2.1",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0"
   }
 }
